@@ -11,15 +11,10 @@ type test struct {
 	expected int
 }
 
-var input string
-
-func init() {
-	file, _ := os.ReadFile("example.txt")
-	input = string(file)
-}
-
 func Test_Part1(t *testing.T) {
-	tests := []test{
+  file, _ := os.ReadFile("input1.txt")
+	input := string(file)
+  tests := []test{
 		{
 			name:     "Part 1",
 			given:    input,
@@ -36,7 +31,9 @@ func Test_Part1(t *testing.T) {
 }
 
 func Test_Part2(t *testing.T) {
-	tests := []test{
+  file, _ := os.ReadFile("input2.txt")
+	input := string(file)
+  tests := []test{
 		{
 			name:     "Part 2",
 			given:    input,
