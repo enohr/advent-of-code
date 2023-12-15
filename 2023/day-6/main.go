@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"strconv"
-	"strings"
+  "fmt"
+  "os"
+  "strconv"
+  "strings"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func part1(input string) int {
   times := strings.Fields(parts[0])[1:] 
   distances := strings.Fields(parts[1])[1:]
   result := 1
-  
+
   for i, time := range times {
     sum := 0
     record, _ := strconv.Atoi(distances[i])
@@ -42,5 +42,21 @@ func part1(input string) int {
 }
 
 func part2(input string) int {
-  return 1
+  parts := strings.Split(input, "\n")
+  times := strings.Fields(parts[0])[1:]
+  distances := strings.Fields(parts[1])[1:]
+
+  time, _ := strconv.Atoi(strings.Join(times, ""))
+  record, _ := strconv.Atoi(strings.Join(distances, ""))
+
+  sum := 0
+  for i := 0; i <= time; i++ {
+    ms := i
+    ml := time - i
+    traveled := ms * ml
+    if traveled > record {
+      sum++
+    }
+  }
+  return sum
 }
