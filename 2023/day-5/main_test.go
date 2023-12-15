@@ -33,12 +33,12 @@ func Test_Part1(t *testing.T) {
 
 func Test_Part2(t *testing.T) {
   file, _ := os.ReadFile("input2.txt")
-	input := string(file)
+	input := strings.TrimRight(string(file), "\n")
   tests := []test{
 		{
 			name:     "Part 2",
 			given:    input,
-			expected: 1,
+			expected: 46,
 		},
 	}
 	for _, tt := range tests {
