@@ -9,8 +9,8 @@ import (
 )
 
 type Hand struct {
-  Bid int
   Cards string
+  Bid int
   Rank int64
   Type int
 }
@@ -37,6 +37,14 @@ func main() {
 
 
 func part1(input string) int {
+  return playCamelCards(input, false)
+}
+
+func part2(input string) int {
+  return playCamelCards(input, true)
+}
+
+func playCamelCards(input string, replaceJoker bool) int {
   var hands []*Hand
   matches := make([][]*Hand, 8)
   var orderedMatches []*Hand
@@ -54,19 +62,18 @@ func part1(input string) int {
   }
 
   for _, h := range hands {
-    h.SetType()
-    h.CalculateRank()
+    h.CalculateRank(replaceJoker)
+    h.SetType(replaceJoker)
     matches[h.Type] = append(matches[h.Type], h)
   }
 
+  // Order the hands based on type and rank
   for _, m := range matches {
     sort.Slice(m, func(i, j int) bool {
       return m[i].Rank < m[j].Rank
     })
     orderedMatches = append(orderedMatches, m...)
   }
-
-  // Something wrong. Answer too high
 
   sum := 0
   for i, om := range orderedMatches {
@@ -75,18 +82,24 @@ func part1(input string) int {
   return sum
 }
 
-func (h *Hand) SetType() {
+func (h *Hand) SetType(replaceJoker bool) {
   m := make(map[rune]int, 5)
 
+  if replaceJoker {
+    h.ReplaceJoker()
+  }
+
+  // Calculate the card frequency
   for _, card := range h.Cards {
     m[card]++
   }
-
 
   switch len(m) {
   case 1:
     h.Type = FIVEKIND
   case 2:
+    // If first or second item count is 4, then the other one will be 1.
+    // So, its a FOURKIND. Otherwhise, it will be a FULLHOUSE
     first, second := rune(h.Cards[0]), rune(h.Cards[1])
     if m[first] == 4 || m[second] == 4 {
       h.Type = FOURKIND 
@@ -94,6 +107,8 @@ func (h *Hand) SetType() {
       h.Type = FULLHOUSE
     }
   case 3:
+    // If one of the item count is 3, then the other two will be 1.
+    // So its a THREEKIND. Otherwhise, it will be a TWOPAIR.
     first, second, third := rune(h.Cards[0]), rune(h.Cards[1]), rune(h.Cards[2])
     if m[first] == 3 || m[second] == 3 || m[third] == 3 {
       h.Type = THREEKIND
@@ -107,10 +122,15 @@ func (h *Hand) SetType() {
   }
 }
 
-func (h *Hand) CalculateRank() {
+// Calculate the rank by transforming the hand in
+// hexadecimal number
+func (h *Hand) CalculateRank(replaceJoker bool) {
   cardsHex := h.Cards
-  
+
   // Transform cards in hex
+  if replaceJoker {
+    cardsHex = strings.ReplaceAll(cardsHex, "J", "1")
+  }
   // A should goes first to not be replaced again
   cardsHex = strings.ReplaceAll(cardsHex, "A", "E")
   cardsHex = strings.ReplaceAll(cardsHex, "T", "A")
@@ -118,9 +138,37 @@ func (h *Hand) CalculateRank() {
   cardsHex = strings.ReplaceAll(cardsHex, "Q", "C")
   cardsHex = strings.ReplaceAll(cardsHex, "K", "D")
 
+  h.Cards = cardsHex
   h.Rank, _ = strconv.ParseInt(string(cardsHex), 16, 0)
 }
 
-func part2(input string) int {
-  return 1
+// This function will replace Joker (char 1)
+// by the greatest and most frequent Card.
+// e.g:
+// A2221 -> A2222
+// 22AA1 -> 22AAA
+func (h *Hand) ReplaceJoker() {
+  m := make(map[rune]int, 5)
+  for _, card := range h.Cards {
+    m[card]++
+  }
+
+  count := 0
+  value := rune(0)
+  for k, v := range m {
+    if k == '1' {
+      continue
+    }
+    if v > count {
+      count = v
+      value = k
+      continue
+    }
+    if v == count && k > value {
+      count = v
+      value = k
+    }
+  }
+  h.Cards = strings.ReplaceAll(h.Cards, "1", string(value))
 }
+
