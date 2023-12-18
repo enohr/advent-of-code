@@ -25,13 +25,26 @@ func part1(input string) int {
 	for _, p := range parts {
 		splitted := strings.Split(p, " ")
 		values := StringArrayToInt(splitted)
-		sum += calculate(values)
+		sum += calculate1(values)
 	}
 
 	return sum
 }
 
-func calculate(values []int) int {
+func part2(input string) int {
+	parts := strings.Split(input, "\n")
+
+	sum := 0
+	for _, p := range parts {
+		splitted := strings.Split(p, " ")
+		values := StringArrayToInt(splitted)
+		sum += calculate2(values)
+	}
+
+	return sum
+}
+
+func calculate1(values []int) int {
 	if slices.Max(values) == 0 && slices.Min(values) == 0 {
 		return 0
 	}
@@ -41,7 +54,20 @@ func calculate(values []int) int {
 		v := values[i] - values[i-1]
 		new = append([]int{v}, new...)
 	}
-	return calculate(new) + values[len(values)-1]
+	return calculate1(new) + values[len(values)-1]
+}
+
+func calculate2(values []int) int {
+	if slices.Max(values) == 0 && slices.Min(values) == 0 {
+		return 0
+	}
+
+	var new []int
+	for i := len(values) - 1; i > 0; i-- {
+		v := values[i] - values[i-1]
+		new = append([]int{v}, new...)
+	}
+	return values[0] - calculate2(new)
 }
 
 func StringArrayToInt(input []string) []int {
@@ -51,8 +77,4 @@ func StringArrayToInt(input []string) []int {
 		ret = append(ret, value)
 	}
 	return ret
-}
-
-func part2(input string) int {
-	return 1
 }
