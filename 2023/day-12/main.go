@@ -21,16 +21,32 @@ func part1(input string) int {
 	lines := strings.Split(input, "\n")
 	sum := 0
 	for _, line := range lines {
+		cache := make(map[string]int)
 		fields := strings.Fields(line)
 		str, num := fields[0], fields[1]
 		nums := StringArrayToInt(strings.Split(num, ","))
-		res := walk(str, nums)
-		sum += res
+		sum += walk(str, nums, cache)
 	}
 	return sum
 }
 
-func walk(str string, nums []int) int {
+func part2(input string) int {
+	lines := strings.Split(input, "\n")
+	sum := 0
+	for _, line := range lines {
+		cache := make(map[string]int)
+		fields := strings.Fields(line)
+		str := strings.Repeat(fields[0]+"?", 5)
+		str = str[:len(str)-1]
+		num := strings.Repeat(fields[1]+",", 5)
+		nums := StringArrayToInt(strings.Split(num[:len(num)-1], ","))
+
+		sum += walk(str, nums, cache)
+	}
+	return sum
+}
+
+func walk(str string, nums []int, cache map[string]int) int {
 	if len(str) == 0 {
 		if len(nums) == 0 {
 			return 1
@@ -46,45 +62,47 @@ func walk(str string, nums []int) int {
 		return 1
 	}
 
+	key := generateKey(str, nums)
+	if value, ok := cache[key]; ok {
+		return value
+	}
+
 	if nums[0] > len(str) {
 		return 0
 	}
 
 	total := 0
 	if str[0] == '.' || str[0] == '?' {
-		total += walk(str[1:], nums)
+		total += walk(str[1:], nums, cache)
 	}
 
+	// This need a refactor asap
 	if str[0] == '?' || str[0] == '#' {
 		s := str[:nums[0]]
 		if !strings.Contains(s, ".") && len(str) >= nums[0] && (len(str) == nums[0] || str[nums[0]] != '#') {
 			if len(str) == nums[0] {
-				total += walk(str[nums[0]:], nums[1:])
+				total += walk(str[nums[0]:], nums[1:], cache)
 			} else {
-				total += walk(str[nums[0]+1:], nums[1:])
+				total += walk(str[nums[0]+1:], nums[1:], cache)
 			}
 		} else if strings.Count(str, "#") == nums[0] && len(str) == nums[0] {
-			total += walk(str[nums[0]:], nums[1:])
+			total += walk(str[nums[0]:], nums[1:], cache)
 		}
 	}
 
+	cache[key] = total
 	return total
 }
 
-func part2(input string) int {
-	lines := strings.Split(input, "\n")
-	sum := 0
-	for _, line := range lines {
-		fields := strings.Fields(line)
-		str := strings.Repeat(fields[0]+"?", 5)
-		str = str[:len(str)-1]
-		num := strings.Repeat(fields[1]+",", 5)
-		nums := StringArrayToInt(strings.Split(num[:len(num)-1], ","))
+func generateKey(str string, nums []int) string {
+	key := str + "_"
 
-		res := walk(str, nums)
-		sum += res
+	for _, n := range nums {
+		s := strconv.Itoa(n)
+		key += s
 	}
-	return sum
+
+	return key
 }
 
 func StringArrayToInt(input []string) []int {
